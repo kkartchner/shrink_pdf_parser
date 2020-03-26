@@ -29,8 +29,16 @@ function parseTextAreaData() {
 
   let decreaseAdjustments = [];
   let increaseAdjustments = [];
-  for (let i = 17; i < dataArray.length - 6; i += 3) {
+  for (let i = 17; i < dataArray.length; i += 3) {
     let objLine1Cols = dataArray[i].split(" "); // 0: ItemNo, 1: Bin Loc
+
+    if (objLine1Cols[0] === "I/M") { 
+        i += 18;
+        continue;
+    } else if (objLine1Cols[0] === "Warehouse") {
+      break;
+    }
+
     let description = dataArray[i + 1]; // 0: Description
     let objLine3Cols = dataArray[i + 2].split(" "); // 0: Case, 1: OH, 2: CNTD, 3: CASEVAR, 4: CASECOST, 5: TTLCOST
 
@@ -52,6 +60,7 @@ function parseTextAreaData() {
       increaseAdjustments.push(newLineItem);
     }
   }
+
   console.log("Decrease Adjustments:");
   decreaseAdjustments.sort((a, b) => b.cost_variance - a.cost_variance);
   let decrease_adj_total = 0;
