@@ -1,8 +1,8 @@
-  // Create number formatter.
-  var formatter = new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD"
-  });
+// Create number formatter.
+var formatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD"
+});
 
 var LineItem = /** @class */ (function() {
   function LineItem(description, case_variance, cost_variance) {
@@ -14,11 +14,13 @@ var LineItem = /** @class */ (function() {
     var sign = this.case_variance > 0 ? "+" : "";
     return (
       this.description +
-      " (" +
+      "\n" +
+      "   (" +
       sign +
       this.case_variance +
       ") " +
-      formatter.format(this.cost_variance/100)
+      formatter.format(this.cost_variance / 100) +
+      "\n"
     );
   };
   return LineItem;
@@ -32,9 +34,9 @@ function parseTextAreaData() {
   for (let i = 17; i < dataArray.length; i += 3) {
     let objLine1Cols = dataArray[i].split(" "); // 0: ItemNo, 1: Bin Loc
 
-    if (objLine1Cols[0] === "I/M") { 
-        i += 18;
-        continue;
+    if (objLine1Cols[0] === "I/M") {
+      i += 18;
+      continue;
     } else if (objLine1Cols[0] === "Warehouse") {
       break;
     }
@@ -46,7 +48,7 @@ function parseTextAreaData() {
     let cost_var_in_cents =
       objLine3Cols[5].replace(/,|\.|\-/g, "") * (isNegative ? 1 : -1);
 
-    let isCaseVarNegative = objLine3Cols[3][objLine3Cols[3].length-1] === "-";
+    let isCaseVarNegative = objLine3Cols[3][objLine3Cols[3].length - 1] === "-";
     let case_variance = parseInt(objLine3Cols[3]) * (isNegative ? -1 : 1);
 
     let newLineItem = new LineItem(
@@ -61,26 +63,55 @@ function parseTextAreaData() {
     }
   }
 
-  console.log("Decrease Adjustments:");
+  // Decrease Adjustments
+  let decreaseString = "";
   decreaseAdjustments.sort((a, b) => b.cost_variance - a.cost_variance);
+
   let decrease_adj_total = 0;
   decreaseAdjustments.forEach(e => {
     decrease_adj_total += e.cost_variance;
-    console.log(e.toString());
+    decreaseString += e.toString();
   });
-  console.log("Total Decrease: " + formatter.format(decrease_adj_total / 100));
 
-  console.log("\nIncrease Adjustments:");
+  document.getElementById("decAdj").innerHTML = decreaseString.trim();
+
+  document.getElementById("decAdjTotal").innerHTML =
+    "Total Decrease: " + formatter.format(decrease_adj_total / 100);
+
+  // Increase Adjustments
+  let increaseString = "";
   increaseAdjustments.sort((a, b) => a.cost_variance - b.cost_variance);
+
   let increase_adj_total = 0;
   increaseAdjustments.forEach(e => {
     increase_adj_total += e.cost_variance;
-    console.log(e.toString());
+    increaseString += e.toString();
   });
-  console.log("Total Increase: " + formatter.format(increase_adj_total / 100));
 
-  console.log(
-    "\n Total Shrink: " +
-      formatter.format((decrease_adj_total + increase_adj_total) / 100)
-  );
+  document.getElementById("incAdj").innerHTML = increaseString.trim();
+  console.log(increaseString);
+
+  document.getElementById("incAdjTotal").innerHTML =
+    "Total Increase: " + formatter.format(increase_adj_total / 100);
+
+  document.getElementById("shrinkTotal").innerHTML =
+    "Total Shrink: " +
+    formatter.format((decrease_adj_total + increase_adj_total) / 100);
+
+  let temp = document.createElement("textarea");
+  temp.value = increase_adj_total / 100 + "\n" + decrease_adj_total / 100;
+  document.body.append(temp);
+  temp.select();
+  document.execCommand("copy");
+  document.body.removeChild(temp);
+}
+
+function CopyDecAdj() {
+  document.getElementById("decAdj").select();
+  document.execCommand("copy");
+}
+
+function CopyIncAdj() {
+  document.getElementById("incAdj").select();
+  document.execCommand("copy");
 }
