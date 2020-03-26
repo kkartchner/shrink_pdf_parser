@@ -73,7 +73,7 @@ function parseTextAreaData() {
     decreaseString += e.toString();
   });
 
-  document.getElementById("decAdj").innerHTML = decreaseString.trim();
+  document.getElementById("decAdj").value = decreaseString.trim();
 
   document.getElementById("decAdjTotal").innerHTML =
     "Total Decrease: " + formatter.format(decrease_adj_total / 100);
@@ -88,7 +88,7 @@ function parseTextAreaData() {
     increaseString += e.toString();
   });
 
-  document.getElementById("incAdj").innerHTML = increaseString.trim();
+  document.getElementById("incAdj").value = increaseString.trim();
   console.log(increaseString);
 
   document.getElementById("incAdjTotal").innerHTML =
@@ -114,4 +114,12 @@ function CopyDecAdj() {
 function CopyIncAdj() {
   document.getElementById("incAdj").select();
   document.execCommand("copy");
+}
+
+function clearTextAreas() {
+  let textAreas = document.getElementsByTagName("textarea");
+
+  for (let ta of textAreas){
+    ta.value = "";
+  }
 }
