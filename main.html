@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>ShrinkReportAutomator</title>
+        <script src="javascript/main.js"></script>
+        <style>
+            html {
+                background-color: lightsteelblue;
+            }
+            table {
+                width: 100%;
+            }
+            textarea {
+                width: 100%;
+                min-height: 300px;
+            }
+            button {
+                margin-top: 100px;
+                font-size: 20pt;
+            }
+            td {
+                width: 33%;
+                vertical-align: top;
+                padding: 5px;
+                text-align: center;
+            }
+            textarea.card {
+                border: solid black 1px;
+                border-radius: 2px;
+                min-height: 300px;
+                cursor: pointer;
+            }
+
+            h1, h2 {
+                width: 100%;
+                text-align: center;
+                padding: 0;
+                margin: 0;
+                font-size: 20pt;
+            }
+            </style>
+    </head>
+    <body>
+        <table>
+            <tr>
+                <td>
+                    <h1>Variance Data</h1>
+                    <textarea id="textarea" oninput="parseTextAreaData();"></textarea>
+                    <h2 id="shrinkTotal"></h2>
+                </td>
+                <td>
+                    <h1>Decrease Adjustment</h1>
+                    <textarea id="decAdj" class="card" onclick="CopyDecAdj();"></textarea>
+                    <h2 id="decAdjTotal"></h2>
+                </td>
+                <td>
+                    <h1>Increase Adjustment</h1>
+                    <textarea id="incAdj" class="card" onclick="CopyIncAdj();"></textarea>
+                    <h2 id="incAdjTotal"></h2>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="3"><button onclick="clearTextAreas();">Clear</button></td>
+            </tr>
+        </table>
+    </body>
+</html>
