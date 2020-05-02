@@ -1,0 +1,36 @@
+html {
+    background-color: lightsteelblue;
+}
+table {
+    width: 100%;
+}
+textarea {
+    width: 100%;
+    border: solid black 1px;
+    border-radius: 2px;
+    min-height: 300px;
+}
+button {
+    margin-top: 100px;
+    font-size: 20pt;
+}
+td {
+    width: 33%;
+    vertical-align: top;
+    padding: 5px;
+    text-align: center;
+}
+h1, h2, h3 {
+    width: 100%;
+    text-align: center;
+    padding: 0;
+    margin: 0;
+    font-size: 20pt;
+}
+
+td#docInfo {
+    padding-top: 50px;
+}
+td#docInfo h3 {
+    text-align: left;
+}

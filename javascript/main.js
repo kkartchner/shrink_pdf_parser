@@ -1,16 +1,23 @@
+let vars = {
+  decreaseAdjustments: [],
+  increaseAdjustments: [],
+  register_num: "",
+  posting_date: "",
+};
 // Create number formatter.
 var formatter = new Intl.NumberFormat("en-US", {
   style: "currency",
-  currency: "USD"
+  currency: "USD",
 });
 
-var LineItem = /** @class */ (function() {
-  function LineItem(description, case_variance, cost_variance) {
+var LineItem = /** @class */ (function () {
+  function LineItem(register_num, description, case_variance, cost_variance) {
+    this.register_num = register_num;
     this.description = description;
     this.case_variance = case_variance;
     this.cost_variance = cost_variance;
   }
-  LineItem.prototype.toString = function() {
+  LineItem.prototype.toString = function () {
     var sign = this.case_variance > 0 ? "+" : "";
     return (
       this.description +
@@ -25,12 +32,16 @@ var LineItem = /** @class */ (function() {
   };
   return LineItem;
 })();
+
+/********************************
+ * Parse the data provided in the variance data text area.
+ ********************************/
 function parseTextAreaData() {
   let raw_data = document.getElementById("textarea").value;
   let dataArray = raw_data.split("\n");
 
-  let decreaseAdjustments = [];
-  let increaseAdjustments = [];
+  vars.register_num = dataArray[2].split(" ")[2];
+  vars.posting_date = dataArray[3];
 
   for (let i = 17; i < dataArray.length; i += 3) {
     let objLine1Cols = dataArray[i].split(" "); // 0: ItemNo, 1: Bin Loc
@@ -53,23 +64,34 @@ function parseTextAreaData() {
     let case_variance = parseInt(objLine3Cols[3]) * (isNegative ? -1 : 1);
 
     let newLineItem = new LineItem(
+      vars.register_num,
       description,
       case_variance,
       cost_var_in_cents
     );
     if (isNegative) {
-      decreaseAdjustments.push(newLineItem);
+      vars.decreaseAdjustments.push(newLineItem);
     } else if (cost_var_in_cents != 0) {
-      increaseAdjustments.push(newLineItem);
+      vars.increaseAdjustments.push(newLineItem);
     }
   }
 
-  // Decrease Adjustments
+  vars.decreaseAdjustments.sort((a, b) => b.cost_variance - a.cost_variance);
+  vars.increaseAdjustments.sort((a, b) => a.cost_variance - b.cost_variance);
+
+  displayData();
+}
+
+/****************************
+ * Display the variance data that was parsed
+ ****************************/
+function displayData() {
+  /* Display Decrease Adjustments
+   ************************/
   let decreaseString = "";
-  decreaseAdjustments.sort((a, b) => b.cost_variance - a.cost_variance);
 
   let decrease_adj_total = 0;
-  decreaseAdjustments.forEach(e => {
+  vars.decreaseAdjustments.forEach((e) => {
     decrease_adj_total += e.cost_variance;
     decreaseString += e.toString();
   });
@@ -79,12 +101,12 @@ function parseTextAreaData() {
   document.getElementById("decAdjTotal").innerHTML =
     "Total Decrease: " + formatter.format(decrease_adj_total / 100);
 
-  // Increase Adjustments
+  /* Display Increase Adjustments
+   ************************/
   let increaseString = "";
-  increaseAdjustments.sort((a, b) => a.cost_variance - b.cost_variance);
 
   let increase_adj_total = 0;
-  increaseAdjustments.forEach(e => {
+  vars.increaseAdjustments.forEach((e) => {
     increase_adj_total += e.cost_variance;
     increaseString += e.toString();
   });
@@ -95,38 +117,52 @@ function parseTextAreaData() {
   document.getElementById("incAdjTotal").innerHTML =
     "Total Increase: " + formatter.format(increase_adj_total / 100);
 
+  /* Display Total Shrink
+   ************************/
   document.getElementById("shrinkTotal").innerHTML =
     "Total Shrink: " +
     formatter.format((decrease_adj_total + increase_adj_total) / 100);
 
-  /* Add the total decrease and increase values to clipboard */
-  let temp = document.createElement("textarea");
-  temp.value =  decrease_adj_total / 100 + "\n" + increase_adj_total / 100;
-  document.body.append(temp);
-  temp.select();
-  document.execCommand("copy");
-  document.body.removeChild(temp);
+  /* Display Register Num and Posting Date
+   ************************/
+  document.getElementById("registerNum").innerHTML = 
+    "Register Number: " + vars.register_num;
+
+  document.getElementById("postingDate").innerHTML =
+    "Posting Date: " + vars.posting_date;
 }
 
-function CopyDecAdj() {
-  document.getElementById("decAdj").select();
-  document.execCommand("copy");
+/*****************************
+ * Post the data to the database 
+ *****************************/
+function postData() {
+  if (
+    vars.decreaseAdjustments.length == 0 &&
+    vars.increaseAdjustments.length == 0
+  ) {
+    window.alert("No data to post.");
+  } else {
+    window.alert("ToDo: Post the data to a database.");
+    clearTextAreas();
+  }
 }
 
-function CopyIncAdj() {
-  document.getElementById("incAdj").select();
-  document.execCommand("copy");
-}
-
+/*****************************
+ * Clear the text areas and text of all labels
+ *****************************/
 function clearTextAreas() {
   /* Clear text areas */
-  for (let ta of document.getElementsByTagName("textarea")){
+  for (let ta of document.getElementsByTagName("textarea")) {
     ta.value = "";
   }
 
   /* Reset labels to default of $0.00*/
-  for (let lbl of document.getElementsByTagName("h2")){
+  for (let lbl of document.getElementsByTagName("h2")) {
     let colonIndex = lbl.innerHTML.indexOf(":");
-    lbl.innerHTML = lbl.innerHTML.slice(0, colonIndex+1) + " $0.00";
+    lbl.innerHTML = lbl.innerHTML.slice(0, colonIndex + 1) + " $0.00";
+  }
+  for (let lbl of document.getElementsByTagName("h3")) {
+    let colonIndex = lbl.innerHTML.indexOf(":");
+    lbl.innerHTML = lbl.innerHTML.slice(0, colonIndex + 1);
   }
 }
