@@ -11,8 +11,9 @@ var formatter = new Intl.NumberFormat("en-US", {
 });
 
 var LineItem = /** @class */ (function () {
-  function LineItem(register_num, description, case_variance, cost_variance) {
-    this.register_num = register_num;
+  function LineItem(description, case_variance, cost_variance) {
+    this.register_num = vars.register_num;
+    this.posting_date = vars.posting_date;
     this.description = description;
     this.case_variance = case_variance;
     this.cost_variance = cost_variance;
@@ -29,6 +30,15 @@ var LineItem = /** @class */ (function () {
       formatter.format(this.cost_variance / 100) +
       "\n"
     );
+  };
+  LineItem.prototype.toString2 = function () {
+    return [
+      this.register_num,
+      this.posting_date,
+      this.description,
+      this.case_variance,
+      this.cost_variance / 100,
+    ].join("\t");
   };
   return LineItem;
 })();
@@ -64,7 +74,6 @@ function parseTextAreaData() {
     let case_variance = parseInt(objLine3Cols[3]) * (isNegative ? -1 : 1);
 
     let newLineItem = new LineItem(
-      vars.register_num,
       description,
       case_variance,
       cost_var_in_cents
@@ -125,7 +134,7 @@ function displayData() {
 
   /* Display Register Num and Posting Date
    ************************/
-  document.getElementById("registerNum").innerHTML = 
+  document.getElementById("registerNum").innerHTML =
     "Register Number: " + vars.register_num;
 
   document.getElementById("postingDate").innerHTML =
@@ -133,7 +142,7 @@ function displayData() {
 }
 
 /*****************************
- * Post the data to the database 
+ * Post the data to the database
  *****************************/
 function postData() {
   if (
@@ -142,8 +151,27 @@ function postData() {
   ) {
     window.alert("No data to post.");
   } else {
-    window.alert("ToDo: Post the data to a database.");
-    clearTextAreas();
+    let dataString = "";
+    vars.decreaseAdjustments.forEach(
+      (dAdj) => (dataString += dAdj.toString2() + "\n")
+    );
+    vars.increaseAdjustments.forEach(
+      (iAdj) => (dataString += iAdj.toString2() + "\n")
+    );
+    dataString.trim();
+    window.alert(
+      "ToDo: Post the data to a database.\n\nIn the mean time, data was copied " +
+      "to clipboard. Just paste into Google Sheets now."
+    );
+
+    let temp = document.createElement("textarea");
+    temp.value = dataString;
+    document.body.append(temp);
+    temp.select();
+    document.execCommand("copy");
+    document.body.removeChild(temp);
+
+    //clearTextAreas();
   }
 }
 
@@ -151,6 +179,10 @@ function postData() {
  * Clear the text areas and text of all labels
  *****************************/
 function clearTextAreas() {
+  /* Clear line item object lists */
+  vars.decreaseAdjustments.length = 0;
+  vars.increaseAdjustments.length = 0;
+
   /* Clear text areas */
   for (let ta of document.getElementsByTagName("textarea")) {
     ta.value = "";
